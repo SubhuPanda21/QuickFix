@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Quick Fix — On‑demand Vehicle Repair</title>
+  <meta name="description" content="Book a mechanic to your doorstep. Fast, transparent pricing, and live status tracking.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%231a73e8' d='M10 46h44v6a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4z'/%3E%3Cpath fill='%23288cff' d='M8 14h48v28H8z'/%3E%3Ccircle cx='22' cy='52' r='6' fill='%234b5563'/%3E%3Ccircle cx='22' cy='52' r='3' fill='%23e5e7eb'/%3E%3Ccircle cx='42' cy='52' r='6' fill='%234b5563'/%3E%3Ccircle cx='42' cy='52' r='3' fill='%23e5e7eb'/%3E%3Cpath d='M14 20h20v8H14z' fill='%23fff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: 250 250 252;      /* near-white */
+      --fg: 17 24 39;          /* slate-900 */
+      --muted: 100 116 139;    /* slate-500 */
+      --brand: 26 115 232;     /* blue-600 */
+      --brand-2: 40 140 255;   /* lighter */
+      --ok: 5 150 105;         /* emerald-600 */
+      --warn: 217 119 6;       /* amber-600 */
+      --err: 220 38 38;        /* red-600 */
+      --card: 255 255 255;     /* white */
+      --shadow: 0 10px 30px rgba(16,24,40,.08);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color: rgb(var(--fg));
+      background: linear-gradient(180deg, rgba(226,238,255,.33), transparent 300px), rgb(var(--bg));
+    }
+    a{color: rgb(var(--brand)); text-decoration: none}
+    .container{width:min(1120px, 92vw); margin-inline:auto}
+
+    /* Nav */
+    .nav {
+      position:sticky; top:0; z-index:50;
+      backdrop-filter: saturate(180%) blur(8px);
+      background: rgba(255,255,255,.7);
+      border-bottom: 1px solid rgba(15,23,42,.06);
+    }
+    .nav-inner{display:flex; align-items:center; justify-content:space-between; padding:14px 0}
+    .brand{display:flex; gap:10px; align-items:center; font-weight:800; letter-spacing:.2px}
+    .brand svg{width:28px; height:28px}
+    .nav a{font-weight:600; color:rgb(51,65,85)}
+    .menu{display:flex; gap:18px; align-items:center}
+    .mobile-toggle{display:none}
+
+    /* Buttons */
+    .btn{appearance:none; border:none; cursor:pointer; font-weight:700; padding:12px 16px; border-radius:12px; display:inline-flex; align-items:center; gap:10px}
+    .btn-primary{background: linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2))); color:white; box-shadow: var(--shadow)}
+    .btn-ghost{background: transparent; color: rgb(var(--brand)); border:1px solid rgba(26,115,232,.2)}
+
+    /* Hero */
+    .hero{padding:64px 0 28px}
+    .hero-grid{display:grid; grid-template-columns: 1.1fr .9fr; gap:28px; align-items:center}
+    .kicker{display:inline-flex; align-items:center; gap:8px; color:rgb(29,78,216); background:rgba(59,130,246,.10); padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px}
+    h1{font-size: clamp(32px, 4vw, 52px); line-height:1.05; margin:12px 0}
+    .lead{font-size: clamp(16px, 2.1vw, 18px); color: rgb(var(--muted)); max-width:58ch}
+    .hero-cta{display:flex; gap:12px; margin:22px 0 8px}
+    .hero-card{background: white; border-radius:16px; padding:18px; box-shadow: var(--shadow); display:grid; grid-template-columns: 1fr 1fr; gap:14px}
+    .stat{background: linear-gradient(180deg, rgba(59,130,246,.07), rgba(59,130,246,0)); padding:12px; border-radius:12px}
+
+    /* Sections */
+    section{padding:44px 0}
+    .section-title{font-size:28px; margin:0 0 8px}
+    .muted{color: rgb(var(--muted))}
+
+    /* Services */
+    .grid{display:grid; gap:16px}
+    .grid-3{grid-template-columns: repeat(3, minmax(0,1fr))}
+    .card{background: rgb(var(--card)); border:1px solid rgba(15,23,42,.06); border-radius:16px; padding:18px; box-shadow: var(--shadow)}
+    .service{display:flex; gap:14px}
+    .service svg{width:28px; height:28px}
+
+    /* How it works */
+    .steps{display:grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap:14px}
+    .step{position:relative; padding:16px; border-radius:14px; background:white; border:1px dashed rgba(15,23,42,.08)}
+    .step::after{content:""; position:absolute; right:-8px; top:50%; translate:0 -50%; width:16px; height:16px; rotate:45deg; background:linear-gradient(135deg, rgba(26,115,232,.12), transparent); border-right:1px dashed rgba(15,23,42,.1); border-top:1px dashed rgba(15,23,42,.1)}
+    .steps .step:last-child::after{display:none}
+
+    /* Booking */
+    form{display:grid; gap:14px}
+    .form-row{display:grid; gap:12px; grid-template-columns: repeat(2, minmax(0,1fr))}
+    label{font-weight:600; font-size:14px}
+    .input{width:100%; padding:12px 12px; border-radius:12px; border:1px solid rgba(15,23,42,.12); background:white}
+    .input:focus{outline:2px solid rgba(26,115,232,.25); border-color: rgba(26,115,232,.35)}
+    .hint{font-size:12px; color: rgb(var(--muted))}
+    .status-pill{display:inline-flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px; font-weight:700; font-size:12px}
+    .pill-pending{background:rgba(217,119,6,.12); color:rgb(var(--warn))}
+    .pill-ok{background:rgba(5,150,105,.12); color:rgb(var(--ok))}
+    .pill-brand{background:rgba(26,115,232,.12); color:rgb(var(--brand))}
+    .progress{height:8px; background:rgba(15,23,42,.06); border-radius:999px; overflow:hidden}
+    .progress > span{display:block; height:100%; background: linear-gradient(90deg, rgb(var(--brand)), rgb(var(--brand-2))); width:0%}
+
+    /* Job list */
+    .jobs{display:grid; gap:12px}
+    .job{display:grid; gap:10px; border-left:4px solid rgba(26,115,232,.5)}
+    .job-head{display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:space-between}
+    .job-meta{display:flex; gap:14px; flex-wrap:wrap; font-size:13px; color:rgb(var(--muted))}
+    .tag{background:rgba(15,23,42,.06); padding:4px 8px; border-radius:8px}
+
+    /* Testimonials */
+    .quote{font-size:15px; color:rgb(31,41,55)}
+
+    /* Footer */
+    footer{padding:34px 0; border-top:1px solid rgba(15,23,42,.06); color:rgb(var(--muted))}
+
+    /* Utilities */
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .spacer{height:20px}
+    .hidden{display:none}
+
+    /* Mobile */
+    @media (max-width: 900px){
+      .hero-grid{grid-template-columns: 1fr}
+      .steps{grid-template-columns:1fr 1fr}
+      .grid-3{grid-template-columns:1fr 1fr}
+      .form-row{grid-template-columns:1fr}
+      .menu{display:none}
+      .mobile-toggle{display:inline-flex}
+    }
+    @media (max-width: 600px){
+      .steps{grid-template-columns:1fr}
+      .grid-3{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <!-- Nav -->
+  <nav class="nav" role="navigation" aria-label="Main">
+    <div class="container nav-inner">
+      <a class="brand" href="#home" aria-label="Quick Fix Home">
+        <svg viewBox="0 0 64 64" aria-hidden="true"><path fill="#1a73e8" d="M10 46h44v6a4 4 0 0 1-4 4H14a4 4 0 0 1-4-4z"/><path fill="#288cff" d="M8 14h48v28H8z"/><circle cx="22" cy="52" r="6" fill="#4b5563"/><circle cx="22" cy="52" r="3" fill="#e5e7eb"/><circle cx="42" cy="52" r="6" fill="#4b5563"/><circle cx="42" cy="52" r="3" fill="#e5e7eb"/><path d="M14 20h20v8H14z" fill="#fff"/></svg>
+        <span>Quick&nbsp;Fix</span>
+      </a>
+      <div class="menu" role="menubar">
+        <a href="#services" role="menuitem">Services</a>
+        <a href="#how" role="menuitem">How it works</a>
+        <a href="#book" role="menuitem">Book</a>
+        <a href="#track" role="menuitem">Track</a>
+        <a class="btn btn-ghost" href="tel:+1800123456" aria-label="Call Quick Fix">Call now</a>
+      </div>
+      <button class="btn btn-ghost mobile-toggle" aria-expanded="false" aria-controls="mobileMenu">☰</button>
+    </div>
+    <div id="mobileMenu" class="container hidden" role="menu">
+      <div class="card" style="margin-bottom:12px">
+        <div class="row">
+          <a href="#services">Services</a>
+          <a href="#how">How it works</a>
+          <a href="#book">Book</a>
+          <a href="#track">Track</a>
+          <a class="btn btn-ghost" href="tel:+1800123456">Call now</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header id="home" class="hero">
+    <div class="container hero-grid">
+      <div>
+        <span class="kicker">24×7 • Doorstep • Trusted mechanics</span>
+        <h1>On‑demand vehicle repair, <span style="background:linear-gradient(90deg,rgba(26,115,232,.18),rgba(40,140,255,.18)); padding:0 10px; border-radius:10px">anywhere</span> you are.</h1>
+        <p class="lead">Flat tyre at work? Battery down at home? Book a vetted mechanic to your location in minutes. Transparent pricing, live tracking, and secure payments.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#book">Book a mechanic</a>
+          <a class="btn btn-ghost" href="#services">See services</a>
+        </div>
+        <div class="row muted" style="gap:22px; margin-top:12px">
+          <div class="row"><span aria-hidden>⭐</span><strong>4.9/5</strong> average</div>
+          <div class="row"><span aria-hidden>⏱️</span> ETA <strong>35–60 min</strong> in metros</div>
+          <div class="row"><span aria-hidden>🛡️</span> 7‑day service warranty</div>
+        </div>
+      </div>
+      <div class="hero-card" aria-label="At‑a‑glance">
+        <div class="stat">
+          <div class="muted" style="font-size:12px">Typical onsite time</div>
+          <div style="font-weight:800; font-size:24px">45 mins</div>
+        </div>
+        <div class="stat">
+          <div class="muted" style="font-size:12px">Same‑day fixes</div>
+          <div style="font-weight:800; font-size:24px">92%</div>
+        </div>
+        <div class="stat">
+          <div class="muted" style="font-size:12px">Parts availability</div>
+          <div style="font-weight:800; font-size:24px">1,200+</div>
+        </div>
+        <div class="stat">
+          <div class="muted" style="font-size:12px">Cities covered</div>
+          <div style="font-weight:800; font-size:24px">30+</div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Services -->
+  <section id="services">
+    <div class="container">
+      <h2 class="section-title">Popular services</h2>
+      <p class="muted">Upfront quotes. Only pay when the job is complete.</p>
+      <div class="grid grid-3" style="margin-top:16px">
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <path d="M3 16l3-3 4 4 8-8 3 3"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+          <div>
+            <strong>Battery jumpstart / replace</strong>
+            <div class="muted">Starts at 399/- • 30–45 mins</div>
+          </div>
+        </div>
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <circle cx="12" cy="12" r="10"/><path d="M4 12h16"/><path d="M12 2v20"/>
+          </svg>
+          <div>
+            <strong>Flat tyre repair / replace</strong>
+            <div class="muted">Starts at 199/- • 20–40 mins</div>
+          </div>
+        </div>
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <path d="M3 7h6l7-4 4 2-7 4"/><path d="M3 7v10a4 4 0 0 0 4 4h6a4 4 0 0 0 4-4V7"/>
+          </svg>
+          <div>
+            <strong>Oil change & filters</strong>
+            <div class="muted">From 499/- • 40–60 mins</div>
+          </div>
+        </div>
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <rect x="3" y="7" width="18" height="13" rx="2"/><path d="M16 3v4"/><path d="M8 3v4"/>
+          </svg>
+          <div>
+            <strong>Scheduled service</strong>
+            <div class="muted">OEM‑grade service at home</div>
+          </div>
+        </div>
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <path d="M10 13a5 5 0 1 1 4 0"/><path d="M12 17v3"/><path d="M9 20h6"/>
+          </svg>
+          <div>
+            <strong>Check engine light</strong>
+            <div class="muted">Diagnostics • Clear codes</div>
+          </div>
+        </div>
+        <div class="card service">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden>
+            <path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5.5 20l2-7L2 9h7z"/>
+          </svg>
+          <div>
+            <strong>Emergency roadside</strong>
+            <div class="muted">Locked out • Fuel delivery</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How it works -->
+  <section id="how">
+    <div class="container">
+      <h2 class="section-title">How it works</h2>
+      <div class="steps" style="margin-top:12px">
+        <div class="step"><strong>1) Request</strong><div class="muted">Describe the issue, share location &amp; time.</div></div>
+        <div class="step"><strong>2) Match</strong><div class="muted">We assign a vetted, nearby mechanic.</div></div>
+        <div class="step"><strong>3) Track</strong><div class="muted">Live status updates as they head over.</div></div>
+        <div class="step"><strong>4) Done</strong><div class="muted">Pay securely after the fix. 7‑day warranty.</div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Booking -->
+  <section id="book">
+    <div class="container">
+      <h2 class="section-title">Book a mechanic</h2>
+      <p class="muted">No prepayment required. We'll confirm your quote over SMS.</p>
+      <div class="grid" style="grid-template-columns: 1.1fr .9fr; gap:18px">
+        <form id="bookingForm" class="card" aria-labelledby="bookingTitle">
+          <div class="row" style="justify-content:space-between">
+            <strong id="bookingTitle">Request details</strong>
+            <span id="formStatus" class="status-pill pill-brand hidden">Submitting…</span>
+          </div>
+          <div class="form-row">
+            <div>
+              <label for="name">Full name</label>
+              <input class="input" id="name" name="name" required placeholder="Alex Johnson" />
+            </div>
+            <div>
+              <label for="phone">Phone</label>
+              <input class="input" id="phone" name="phone" required inputmode="tel" pattern="[0-9+\-() ]{7,}" placeholder="+1 555 0123" />
+              <div class="hint">We'll text status updates.</div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label for="email">Email (optional)</label>
+              <input class="input" id="email" name="email" type="email" placeholder="you@email.com" />
+            </div>
+            <div>
+              <label for="vehicle">Vehicle</label>
+              <input class="input" list="brands" id="vehicle" name="vehicle" required placeholder="Honda Civic 2018" />
+              <datalist id="brands">
+                <option>Toyota</option><option>Honda</option><option>Hyundai</option><option>Tesla</option><option>Ford</option><option>BMW</option><option>Maruti</option>
+              </datalist>
+            </div>
+          </div>
+          <div class="form-row">
+            <div>
+              <label for="service">Service</label>
+              <select class="input" id="service" name="service" required>
+                <option value="">Select…</option>
+                <option>Battery jumpstart</option>
+                <option>Battery replacement</option>
+                <option>Flat tyre repair</option>
+                <option>Oil change</option>
+                <option>General diagnostics</option>
+                <option>Emergency roadside</option>
+              </select>
+            </div>
+            <div>
+              <label for="time">Preferred time</label>
+              <input class="input" id="time" name="time" type="datetime-local" required />
+            </div>
+          </div>
+          <div>
+            <label for="address">Location</label>
+            <div class="row" style="align-items:stretch">
+              <input class="input" id="address" name="address" placeholder="Apartment, street, city" style="flex:1" required />
+              <button class="btn btn-ghost" id="geoBtn" type="button" aria-live="polite">📍 Use my location</button>
+            </div>
+            <div id="geoNote" class="hint"></div>
+          </div>
+          <div>
+            <label for="issue">Describe the issue</label>
+            <textarea class="input" id="issue" name="issue" rows="3" placeholder="e.g., Car won’t start, battery likely dead"></textarea>
+          </div>
+          <div>
+            <label for="photo">Photo (optional)</label>
+            <input class="input" id="photo" name="photo" type="file" accept="image/*" />
+          </div>
+          <div>
+            <div class="progress" aria-label="Estimated arrival progress"><span id="etaBar" style="width:0%"></span></div>
+            <div class="hint">ETA updates after booking is confirmed.</div>
+          </div>
+          <div class="row" style="justify-content:flex-end">
+            <button class="btn btn-primary" type="submit">Request mechanic</button>
+          </div>
+        </form>
+
+        <aside class="card" aria-labelledby="assuranceTitle">
+          <strong id="assuranceTitle">Why book with Quick Fix?</strong>
+          <ul>
+            <li>✔️ Vetted mechanics &amp; background‑checked</li>
+            <li>✔️ Fixed, upfront quotes</li>
+            <li>✔️ 7‑day work warranty</li>
+            <li>✔️ Pay after service (cash/UPI/card)</li>
+          </ul>
+          <div class="spacer"></div>
+          <strong>Serviceable areas</strong>
+          <p class="muted">We’re expanding fast. Call us to confirm your area.</p>
+          <iframe title="Service area map" style="border:0; width:100%; height:200px; border-radius:12px" loading="lazy" referrerpolicy="no-referrer-when-downgrade" src="https://www.openstreetmap.org/export/embed.html?bbox=72.77%2C18.88%2C73.05%2C19.30&amp;layer=mapnik"></iframe>
+        </aside>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tracker -->
+  <section id="track">
+    <div class="container">
+      <h2 class="section-title">Your requests</h2>
+      <p class="muted">Track live status. You can cancel before a mechanic is en‑route.</p>
+      <div id="jobs" class="jobs"></div>
+      <div id="noJobs" class="muted" style="margin-top:8px">No active requests yet. Book one above.</div>
+    </div>
+  </section>
+
+  <!-- Testimonials -->
+  <section>
+    <div class="container">
+      <h2 class="section-title">What drivers say</h2>
+      <div class="grid grid-3" style="margin-top:12px">
+        <div class="card"><div class="quote">“Booked during rush hour, mechanic arrived in 40 minutes and fixed my tyre in the parking lot. Super smooth.”<div class="muted" style="margin-top:8px">— Priya S.</div></div></div>
+        <div class="card"><div class="quote">“Transparent pricing and no upsell. They showed me the diagnostics report on the spot.”<div class="muted" style="margin-top:8px">— Arjun M.</div></div></div>
+        <div class="card"><div class="quote">“Saved my morning. Battery swap at home before work. 10/10 will use again.”<div class="muted" style="margin-top:8px">— Neha R.</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <div class="container row" style="justify-content:space-between">
+      <div>© <span id="year"></span> Quick Fix Inc.</div>
+      <div class="row"><a href="#book">Book</a><span class="muted">•</span><a href="#services">Services</a><span class="muted">•</span><a href="#">Privacy</a></div>
+    </div>
+  </footer>
+
+  <!-- Toast -->
+  <div id="toast" class="hidden" role="status" aria-live="polite" style="position:fixed; left:50%; bottom:24px; translate:-50% 0; background:rgb(17,24,39); color:white; padding:12px 16px; border-radius:12px; box-shadow:var(--shadow); font-weight:700">Saved</div>
+
+  <script>
+    const $ = (sel, ctx=document) => ctx.querySelector(sel);
+    const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
+    const toast = (msg) => {
+      const el = $('#toast'); el.textContent = msg; el.classList.remove('hidden');
+      setTimeout(() => el.classList.add('hidden'), 1800);
+    };
+
+    // Mobile nav toggle
+    const toggle = $('.mobile-toggle');
+    const mobileMenu = $('#mobileMenu');
+    toggle?.addEventListener('click', () => {
+      const open = mobileMenu.classList.toggle('hidden') === false;
+      toggle.setAttribute('aria-expanded', String(open));
+    });
+
+    // Footer year
+    $('#year').textContent = new Date().getFullYear();
+
+    // Geolocation
+    $('#geoBtn').addEventListener('click', async () => {
+      const note = $('#geoNote');
+      if (!navigator.geolocation){ note.textContent = 'Geolocation not supported in this browser.'; return; }
+      note.textContent = 'Locating…';
+      navigator.geolocation.getCurrentPosition(pos => {
+        const { latitude, longitude } = pos.coords;
+        note.textContent = `Location captured: ${latitude.toFixed(5)}, ${longitude.toFixed(5)} (added to form)`;
+        const addr = $('#address');
+        if(addr.value.trim().length === 0){ addr.value = `${latitude.toFixed(5)}, ${longitude.toFixed(5)}`; }
+      }, err => {
+        note.textContent = 'Could not get your location (permission denied or unavailable).';
+      }, { enableHighAccuracy:true, timeout:10000 });
+    });
+
+    // Booking + Local storage jobs
+    const JOBS_KEY = 'qfx_jobs_v1';
+    const loadJobs = () => { try { return JSON.parse(localStorage.getItem(JOBS_KEY) || '[]'); } catch { return []; } };
+    const saveJobs = (jobs) => localStorage.setItem(JOBS_KEY, JSON.stringify(jobs));
+
+    const STATUSES = ['Submitted', 'Confirmed', 'En‑route', 'In service', 'Completed'];
+
+    const renderJobs = () => {
+      const jobs = loadJobs();
+      const wrap = $('#jobs');
+      wrap.innerHTML = '';
+      if(jobs.length === 0){ $('#noJobs').classList.remove('hidden'); return; }
+      $('#noJobs').classList.add('hidden');
+      jobs.forEach(job => {
+        const pct = (job.statusIndex / (STATUSES.length - 1)) * 100;
+        const el = document.createElement('div');
+        el.className = 'card job';
+        el.innerHTML = `
+          <div class="job-head">
+            <div class="row"><strong>${job.id}</strong> <span class="tag">${job.service}</span></div>
+            <div class="row">
+              <span class="status-pill ${job.statusIndex < 2 ? 'pill-pending' : (job.statusIndex >= 4 ? 'pill-ok' : 'pill-brand')}">${STATUSES[job.statusIndex]}</span>
+              ${job.statusIndex < 2 ? `<button class="btn btn-ghost" data-cancel="${job.id}">Cancel</button>` : ''}
+            </div>
+          </div>
+          <div class="job-meta">
+            <div>📍 ${job.address}</div>
+            <div>👤 ${job.name}</div>
+            <div>📅 ${new Date(job.time).toLocaleString()}</div>
+          </div>
+          <div class="progress"><span style="width:${pct.toFixed(0)}%"></span></div>
+        `;
+        wrap.appendChild(el);
+      });
+
+      // Cancel handlers
+      $$('[data-cancel]').forEach(btn => btn.addEventListener('click', (e) => {
+        const id = e.currentTarget.getAttribute('data-cancel');
+        let jobs = loadJobs();
+        const j = jobs.find(x => x.id === id);
+        if(!j) return;
+        if(j.statusIndex >= 2){ toast('Cannot cancel: mechanic already en‑route'); return; }
+        jobs = jobs.filter(x => x.id !== id); saveJobs(jobs); renderJobs(); toast('Request cancelled');
+      }));
+    };
+
+    const simulateProgress = (id) => {
+      // move through statuses every ~7s until Completed
+      const step = () => {
+        const jobs = loadJobs();
+        const job = jobs.find(j => j.id === id);
+        if(!job) return;
+        if(job.statusIndex < STATUSES.length - 1){
+          job.statusIndex += 1; saveJobs(jobs); renderJobs();
+          if(job.statusIndex < STATUSES.length - 1){ setTimeout(step, 7000); }
+          else { toast('Job completed ✔'); }
+        }
+      };
+      setTimeout(step, 5000); // first confirm after 5s
+    };
+
+    $('#bookingForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const form = e.currentTarget;
+      if(!form.reportValidity()) return;
+      $('#formStatus').classList.remove('hidden');
+      const data = Object.fromEntries(new FormData(form).entries());
+      // Minimal fake submit delay
+      setTimeout(() => {
+        $('#formStatus').classList.add('hidden');
+        const jobs = loadJobs();
+        const id = 'QFX-' + Math.random().toString(36).slice(2,6).toUpperCase();
+        const job = {
+          id,
+          name: data.name,
+          phone: data.phone,
+          email: data.email || '',
+          vehicle: data.vehicle,
+          service: data.service,
+          time: data.time,
+          address: data.address,
+          issue: data.issue || '',
+          createdAt: Date.now(),
+          statusIndex: 0 // Submitted
+        };
+        jobs.unshift(job); saveJobs(jobs); renderJobs(); toast('Request submitted');
+        // small ETA bar tease
+        let eta = 0; const bar = $('#etaBar');
+        const timer = setInterval(() => { eta = Math.min(eta+7, 70); bar.style.width = eta + '%'; if(eta >= 70) clearInterval(timer); }, 400);
+        simulateProgress(id);
+        form.reset();
+      }, 700);
+    });
+
+    // Initial render
+    renderJobs();
+  </script>
+</body>
+</html>
