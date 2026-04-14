@@ -5,7 +5,7 @@
 🌐 **Live Demo:** [https://subhupanda21.github.io/QuickFix/](https://subhupanda21.github.io/QuickFix/)
 
 --- 
- 
+  
 ## 📖 About  
 
 **QuickFix** is a front-end web project that simulates an on-demand vehicle repair booking platform. It allows users to request a mechanic to their doorstep, track their request status, and view available services — all within a clean, single-page HTML interface.
